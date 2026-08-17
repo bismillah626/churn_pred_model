@@ -92,3 +92,7 @@ The model was evaluated using various metrics:
 - **F1-score**  : 60%
 
 The Gradient Boosting Classifier was found to be the best-performing model for predicting churn.
+
+
+## Project Status
+Completed full end-to-end customer churn prediction pipeline.
