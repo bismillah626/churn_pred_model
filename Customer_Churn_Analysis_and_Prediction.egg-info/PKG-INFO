@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: Customer-Churn-Analysis-and-Prediction
+Version: 0.0.1
+Author: Debopam Dey(Pritam)
+Author-email: letsdecode2014@gmail.com
+Keywords: Customer Churn,Customer Churn Prediction,Customer Churn Analysis
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: matplotlib
+Requires-Dist: seaborn
+Requires-Dist: scikit-learn
+Requires-Dist: dill
+Requires-Dist: Flask
+Requires-Dist: imblearn
+Requires-Dist: mlflow
+Requires-Dist: shap
+Dynamic: author
+Dynamic: author-email
+Dynamic: keywords
+Dynamic: requires-dist
