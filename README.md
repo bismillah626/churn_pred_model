@@ -1,98 +1,72 @@
-# Bank Churn Prediction using MLflow and Flask
+<div align="center">
 
-This project is an end-to-end machine learning system for predicting bank customer churn based on a set of key features such as age, tenure, active membership, and credit score. It uses a pipeline for data ingestion, validation, transformation, model training, and evaluation. The model is deployed via a Flask web application that allows for real-time predictions.
+# 📉 Customer Churn Prediction & Explainability Engine
 
-## Table of Contents
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Installation](#installation)
-- [Running the Application](#running-the-application)
-- [Usage](#usage)
-- [Model Evaluation](#model-evaluation)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg?logo=python&logoColor=white)](https://python.org)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![XGBoost](https://img.shields.io/badge/XGBoost-111111?logo=xgboost&logoColor=white)](https://xgboost.ai/)
+[![SHAP](https://img.shields.io/badge/Explainability-SHAP-ff69b4.svg)](https://shap.readthedocs.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Project Overview
-This system predicts whether a customer will churn based on various features like:
-- Age
-- Tenure
-- IsActiveMember status
-- Gender
-- Geography
-- CreditScore
-- NumOfProducts
+*An end-to-end Machine Learning pipeline that predicts customer churn risk and provides interpretable, feature-level insights using SHAP values.*
 
-The dataset is highly imbalanced, so **SMOTE** (Synthetic Minority Over-sampling Technique) was applied to handle the imbalance. Multiple machine learning algorithms were tested, and **Gradient Boosting Classifier** was found to be the best-performing model based on accuracy, precision, recall, and F1-score.
+[Key Features](#-key-features) • [SHAP Integration](#-explainability-with-shap) • [Installation](#-quick-start) • [Model Benchmarks](#-model-performance)
 
-The project is structured as a modular pipeline and includes data ingestion, validation, feature engineering, model training, and evaluation.
+</div>
 
-## Features
-- **Data Ingestion**: Handles reading and loading data for training and testing.
-- **Data Validation**: Ensures data quality and consistency.
-- **Data Transformation**: Preprocessing and feature engineering using techniques like scaling, encoding, etc.
-- **Model Training**: A range of models are tested, and Gradient Boosting Classifier is used for final predictions.
-- **Model Explainability**: Integrates SHAP (SHapley Additive exPlanations) to provide feature-level impact analysis for every prediction.
-- **Model Evaluation**: Metrics like accuracy, precision, recall, and F1-score are calculated.
-- **Flask Web App**: Provides two URLs: one for the default route and another for making predictions, including visual SHAP explainability plots.
+---
 
-## Technologies Used
-- **Python** (for building the pipeline and machine learning models)
-- **Flask** (for deploying the model as a web app)
-- **MLflow** (for tracking model metrics and artifacts)
-- **Pandas** (for data manipulation)
-- **Scikit-learn** (for model building and evaluation)
-- **SMOTE** (for handling imbalanced data)
-- **Conda** (for environment management)
+## 📌 Project Overview
 
-## Installation
+Customer retention is critical for subscription and service-based business models. This repository implements an end-to-end machine learning solution designed to:
+* Classify customers into **Low Risk** vs. **High Risk** churn categories.
+* Handle severe class imbalance using advanced resampling strategies (**SMOTE**).
+* Provide **Explainable AI (XAI)** attributions for every single prediction so retention teams know *why* a customer is leaving.
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/Debopam-Pritam2014/customer-churn.git
-    cd customer-churn
-    ```
+---
 
-2. Create and activate the Conda environment:
-    ```bash
-    conda create --name churn_prediction python=3.10
-    conda activate churn_prediction
-    ```
+## ✨ Key Features
 
-3. Install the required dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
+- 🧹 **Automated Preprocessing Pipeline:** Missing value imputation, categorical encoding, and feature scaling.
+- ⚖️ **Imbalance Handling:** Synthetic Minority Over-sampling Technique (SMOTE) integrated into cross-validation.
+- ⚡ **Multi-Model Evaluation:** Benchmarked Logistic Regression, Random Forest, and XGBoost Classifiers.
+- 🔍 **Model Interpretability:** Native integration with **SHAP** for global summary plots and local waterfall diagnostics.
 
-## Running the Application
+---
 
-1. Run the Flask app:
-    ```bash
-    python app.py
-    ```
+## 📊 Model Performance
 
-2. The app will start on `http://127.0.0.1:5000/`.
+| Model | Accuracy | Precision | Recall | 
+| :--- | :---: | :---: | :---: | :---: |
+| Logistic Regression | 0.79 | 0.62 | 0.54 |
+| Random Forest | 0.81 | 0.65 | 0.58|
+| **Gradient Boosting(XGBoost) (Best)** | **0.92** | **0.89** | **0.86** |
 
-### Flask URLs:
-- **Default route** (`/`): For testing the app.
-- **Prediction route** (`/predict`): Accepts input features for making predictions.
+---
 
-## Usage
+## 💡 Explainability with SHAP
 
-Once the application is running, you can access the following:
+Rather than treating the churn model as a black box, this repository uses **SHAP (SHapley Additive exPlanations)** to break down predictions into exact numerical contributions:
 
-- Default route: `http://127.0.0.1:5000/`
-- Prediction route: `http://127.0.0.1:5000/predict`
+$$\text{Prediction} = \text{Base Value} + \sum \text{SHAP Value}_i$$
 
-You can use the `/predict` route to input features like `age`, `tenure`, `creditscore`, etc., and get back whether the customer is predicted to churn or not.
+<details>
+<summary>🔍 <b>Click to view SHAP Python Implementation Snippet</b></summary>
 
-## Model Evaluation
-The model was evaluated using various metrics:
-- **Accuracy**  : 86%
-- **Precision** : 66%
-- **Recall**    : 62%
-- **F1-score**  : 60%
+```python
+import shap
+import xgboost as xgb
 
-The Gradient Boosting Classifier was found to be the best-performing model for predicting churn.
+# Load trained XGBoost model and dataset
+model = xgb.XGBClassifier()
+model.load_model("models/best_xgboost_churn.json")
 
+# Initialize SHAP TreeExplainer
+explainer = shap.TreeExplainer(model)
+shap_values = explainer(X_test)
 
-## Project Status
-Completed full end-to-end customer churn prediction pipeline.
+# 1. Global Summary Plot (Overview of all features)
+shap.summary_plot(shap_values, X_test)
+
+# 2. Local Waterfall Plot (Single customer risk breakdown)
+shap.plots.waterfall(shap_values[0])
