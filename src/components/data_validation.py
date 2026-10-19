@@ -35,9 +35,9 @@ class DataValidation:
             }
             for column,dtypes in expected_types.items():
                 if not dtypes(train_data[column]):
-                    raise CustomException(e,sys)
+                    raise ValueError(f"Unexpected dtype for {column} in training data")
                 if not dtypes(test_data[column]):
-                    raise CustomException(e,sys)
+                    raise ValueError(f"Unexpected dtype for {column} in test data")
             
             logging.info("Data Validation Successful.")
             # dropping the null values
@@ -52,6 +52,3 @@ class DataValidation:
 
         except Exception as e:
             raise CustomException(e,sys)
-        
-
-        
