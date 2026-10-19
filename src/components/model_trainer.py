@@ -32,7 +32,7 @@ class ModelTrainer:
                 "K neighbors":KNeighborsClassifier()
             }
             classification_report=get_classification_report(models,X_train,y_train,X_test,y_test)
-            # Find best model based on F1-score
+            # Preserve the existing production selection rule: highest accuracy.
             logging.info(f"Classification report: {classification_report}")
             best_model_name = max(classification_report, key=lambda x: classification_report[x]['accuracy'])
             best_model_report = classification_report[best_model_name]
