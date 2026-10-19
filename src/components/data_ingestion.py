@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import sys
+from pathlib import Path
 from dataclasses import dataclass
 from sklearn.model_selection import train_test_split
 from src.exception_handler import CustomException
@@ -8,6 +9,9 @@ from src.logger import logging
 from src.components.data_validation import DataValidation,DataValidationConfig
 from src.components.data_transformation import DataTransformation,DataTransformationConfig
 from src.components.model_trainer import ModelTrainer,ModelTrainerConfig
+
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
 
 def Numofproducts(n):
     if n==1:
@@ -33,7 +37,7 @@ class DataIngestion:
     def initiate_data_ingestion(self):
         logging.info("Initiate Data Ingestion.")
         try:
-            dataset = pd.read_csv("data\credit-card-customer-churn.csv")
+            dataset = pd.read_csv(ROOT_DIR / "data" / "credit-card-customer-churn.csv")
             # Create directories recursively
             os.makedirs(os.path.dirname(self.data_ingestion_config.raw_data_path), exist_ok=True)
             
@@ -61,4 +65,3 @@ if __name__=="__main__":
     dv=DataValidation()
     dv.initiate_data_validation(train_data_path=train_path,test_data_path=test_path)
     print("Data Validation successful.")
-
