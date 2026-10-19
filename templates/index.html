@@ -1,11 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>This is Home Page.</h1>
-</body>
-</html>
+{% extends "base.html" %}
+{% set active_page = "dashboard" %}
+{% block title %}Churn Intelligence · Dashboard{% endblock %}
+{% block breadcrumb %}Overview{% endblock %}
+{% block content %}
+<div id="dashboard-app">
+    <div id="dashboard-loading" class="loading-overlay">
+        <div><div class="spinner"></div><p>Preparing the analytics workspace…</p></div>
+    </div>
+    <div id="dashboard-error" class="error-state hidden" role="alert"></div>
+
+    <div id="dashboard-content" class="hidden">
+        <section class="hero" id="overview">
+            <div class="hero-copy">
+                <div class="eyebrow">Customer intelligence · refreshed locally</div>
+                <h1>Make churn visible.</h1>
+                <p>Explore the customer base, understand model behavior, and turn risk signals into confident retention decisions.</p>
+            </div>
+            <div class="hero-actions">
+                <a class="button" href="#predictions">Score a customer <span aria-hidden="true">→</span></a>
+                <button class="button secondary" id="clear-filters" type="button">Reset slicers</button>
+            </div>
+        </section>
+
+        <section class="filters" aria-label="Dashboard slicers">
+            <div class="filters-heading"><strong>Interactive slicers</strong><small id="filter-summary">Loading visible customers…</small></div>
+            <div class="filter-field"><label for="filter-geography">Geography</label><select id="filter-geography" class="slicer"></select></div>
+            <div class="filter-field"><label for="filter-gender">Gender</label><select id="filter-gender" class="slicer"></select></div>
+            <div class="filter-field"><label for="filter-product">Products</label><select id="filter-product" class="slicer"></select></div>
+            <div class="filter-field"><label for="filter-active">Membership</label><select id="filter-active" class="slicer"></select></div>
+            <div class="filter-field age-filter"><label for="filter-age-min">Age <span class="range-value" id="age-range-value">18–100</span></label><div style="display:flex;gap:6px"><input id="filter-age-min" class="slicer" type="range" min="18" max="100" value="18" aria-label="Minimum age"><input id="filter-age-max" class="slicer" type="range" min="18" max="100" value="100" aria-label="Maximum age"></div></div>
+        </section>
+
+        <section class="kpi-grid" aria-label="Key performance indicators">
+            <article class="kpi-card"><div class="kpi-top"><span>Visible customers</span><span class="kpi-icon" title="Rows in current filter">▦</span></div><strong class="kpi-value" id="kpi-row-count">—</strong><small class="kpi-foot">Rows in the active cohort</small></article>
+            <article class="kpi-card"><div class="kpi-top"><span>Observed churn rate</span><span class="kpi-icon" title="Share of customers with Exited = 1">↗</span></div><strong class="kpi-value" id="kpi-churn-rate">—</strong><small class="kpi-foot">Target distribution in view</small></article>
+            <article class="kpi-card"><div class="kpi-top"><span>Average credit score</span><span class="kpi-icon" title="Mean CreditScore">✦</span></div><strong class="kpi-value" id="kpi-credit-score">—</strong><small class="kpi-foot">Across the active cohort</small></article>
+            <article class="kpi-card"><div class="kpi-top"><span>Best model</span><span class="kpi-icon" title="Highest holdout accuracy">◎</span></div><strong class="kpi-value" id="kpi-best-model">—</strong><small class="kpi-foot">Selected from the holdout benchmark</small></article>
+        </section>
+
+        <section class="section" aria-labelledby="explore-heading">
+            <div class="section-header"><div><h2 id="explore-heading">Overview & data explorer</h2><p>Use the slicers above to redraw the data story across every descriptive chart.</p></div><span class="section-badge">Descriptive analytics</span></div>
+            <div class="chart-grid">
+                <article class="chart-card"><div class="chart-heading"><h3>Target distribution</h3><small>Exited</small></div><div id="target-chart" class="chart"></div><p id="target-insight" class="insight"></p></article>
+                <article class="chart-card"><div class="chart-heading"><h3>Feature distributions</h3><small>Age · Credit score</small></div><div id="histogram-chart" class="chart"></div><p id="distribution-insight" class="insight"></p></article>
+                <article class="chart-card"><div class="chart-heading"><h3>Feature spread</h3><small>Box plots reveal outliers</small></div><div id="boxplot-chart" class="chart"></div><p id="boxplot-insight" class="insight"></p></article>
+                <article class="chart-card"><div class="chart-heading"><h3>Correlation heatmap</h3><small>Linear relationships</small></div><div id="correlation-chart" class="chart"></div><p id="correlation-insight" class="insight"></p></article>
+                <article class="chart-card wide"><div class="chart-heading"><h3>Categorical features vs target</h3><small>Stayed vs churned customers</small></div><div id="category-chart" class="chart tall"></div><p id="category-insight" class="insight"></p></article>
+            </div>
+        </section>
+
+        <section class="section" id="data-explorer" aria-labelledby="table-heading">
+            <div class="section-header"><div><h2 id="table-heading">Drill-down table</h2><p>Search, inspect, and export the rows currently visible through the slicers.</p></div><span class="section-badge">50 rows shown · CSV export</span></div>
+            <article class="chart-card table-card">
+                <div class="table-toolbar"><div><h3>Customer records</h3><small id="table-summary">Preparing table…</small></div><div style="display:flex;gap:9px"><input id="table-search" class="search-input" type="search" placeholder="Search visible rows…" aria-label="Search customer records"><button class="button secondary" id="export-csv" type="button">Export CSV</button></div></div>
+                <div class="table-wrap"><table><thead><tr><th>Credit score</th><th>Geography</th><th>Gender</th><th>Age</th><th>Tenure</th><th>Balance</th><th>Products</th><th>Active</th><th>Target</th></tr></thead><tbody id="data-table-body"></tbody></table></div>
+            </article>
+        </section>
+
+        <section class="section" id="model-performance" aria-labelledby="model-heading">
+            <div class="section-header"><div><h2 id="model-heading">Model performance</h2><p>Compare the trained model family on the held-out test set and inspect decision quality.</p></div><span class="section-badge">Holdout evaluation</span></div>
+            <div class="chart-grid">
+                <article class="chart-card wide"><div class="chart-heading"><h3>Model comparison</h3><small>Accuracy · precision · recall · F1 · ROC-AUC</small></div><div id="model-chart" class="chart tall"></div><p id="model-insight" class="insight"></p></article>
+                <article class="chart-card"><div class="chart-heading"><h3>ROC curves</h3><small>All candidate models</small></div><div id="roc-chart" class="chart"></div><p id="roc-insight" class="insight"></p></article>
+                <article class="chart-card"><div class="chart-heading"><h3>Precision–recall curves</h3><small>Imbalanced-target view</small></div><div id="pr-chart" class="chart"></div><p id="pr-insight" class="insight"></p></article>
+                <article class="chart-card"><div class="chart-heading"><h3>Confusion matrix</h3><div class="chart-control"><select id="confusion-select" aria-label="Select model confusion matrix"></select></div></div><div id="confusion-chart" class="chart"></div><p id="confusion-insight" class="insight"></p></article>
+                <article class="chart-card"><div class="chart-heading"><h3>Feature importance</h3><small>Top 15 drivers</small></div><div id="importance-chart" class="chart tall"></div><p id="importance-insight" class="insight"></p></article>
+                <article class="chart-card"><div class="chart-heading"><h3>Explainability summary</h3><small>SHAP when compatible</small></div><div id="shap-chart" class="chart tall"></div><p id="shap-insight" class="insight"></p></article>
+                <article class="chart-card wide"><div class="chart-heading"><h3>Prediction probability distribution</h3><small>Best model · held-out customers</small></div><div id="probability-chart" class="chart"></div><p id="probability-insight" class="insight"></p></article>
+                <p id="curve-insight" class="insight" style="grid-column:1/-1">Curves are loading…</p>
+            </div>
+        </section>
+
+        <section class="section" id="predictions" aria-labelledby="prediction-heading">
+            <div class="section-header"><div><h2 id="prediction-heading">Score a customer</h2><p>Submit the same seven fields used by the production preprocessing pipeline for an explainable prediction.</p></div><span class="section-badge">Live inference</span></div>
+            <div class="prediction-layout">
+                <article class="panel">
+                    <h3>Customer profile</h3>
+                    <form id="prediction-form" action="{{ url_for('predict_data') }}" method="post">
+                        <div class="form-grid">
+                            <div class="form-field"><label for="age">Age</label><input id="age" type="number" name="age" min="18" max="100" placeholder="42" required></div>
+                            <div class="form-field"><label for="gender">Gender</label><select id="gender" name="gender" required><option value="" disabled selected>Select gender</option><option>Female</option><option>Male</option></select></div>
+                            <div class="form-field"><label for="tenure">Tenure</label><input id="tenure" type="number" name="tenure" min="0" max="10" placeholder="5" required></div>
+                            <div class="form-field"><label for="CreditScore">Credit score</label><input id="CreditScore" type="number" name="CreditScore" min="300" max="850" placeholder="650" required></div>
+                            <div class="form-field"><label for="IsActiveMember">Active member</label><select id="IsActiveMember" name="IsActiveMember" required><option value="" disabled selected>Select status</option><option value="1">Yes</option><option value="0">No</option></select></div>
+                            <div class="form-field"><label for="Geography">Geography</label><select id="Geography" name="Geography" required><option value="" disabled selected>Select geography</option><option>France</option><option>Spain</option><option>Germany</option></select></div>
+                            <div class="form-field full"><label for="NumOfProducts">Number of products</label><select id="NumOfProducts" name="NumOfProducts" required><option value="" disabled selected>Select products</option><option>One</option><option>Two</option><option>Three</option><option>Four</option></select></div>
+                        </div>
+                        <div class="form-actions"><button class="button" type="submit">Run prediction <span aria-hidden="true">→</span></button><span id="prediction-message" class="form-message" role="status"></span></div>
+                    </form>
+                    <div id="prediction-result" class="prediction-result"><strong id="prediction-label">Prediction pending</strong><p id="prediction-detail"></p></div>
+                </article>
+                <article class="panel"><h3>Why this prediction?</h3><p style="margin-top:7px;font-size:.82rem">When the optional SHAP runtime is available, the chart below ranks the feature impacts for this individual customer.</p><div id="prediction-explanation" class="explanation"><p>Submit a profile to generate an explanation.</p></div></article>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
