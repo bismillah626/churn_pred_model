@@ -2,10 +2,13 @@ numpy
 pandas
 matplotlib
 seaborn
-scikit-learn
+scikit-learn==1.5.2
 dill
 Flask
-imblearn
+imbalanced-learn
 mlflow
 shap
+plotly>=5.24,<6
+gunicorn>=23,<24
+pytest>=8,<9
 -e .
