@@ -1,0 +1,64 @@
+{
+  "dataset": {
+    "source": "data/credit-card-customer-churn.csv",
+    "rows": 10000,
+    "churn_rate": 0.2037,
+    "holdout_rows": 2000,
+    "positive_holdout_rows": 415,
+    "split": "train_test_split(test_size=0.2, random_state=1)"
+  },
+  "best_model": "Gradient Boosting",
+  "average_precision": 0.6924,
+  "specificity": 0.8795,
+  "confusion_matrix": {
+    "labels": ["Stayed", "Churned"],
+    "true_negative": 1394,
+    "false_positive": 191,
+    "false_negative": 133,
+    "true_positive": 282
+  },
+  "shap": {
+    "available_in_captured_runtime": true,
+    "sample_size": 250,
+    "aggregation": "mean absolute SHAP value",
+    "top_features": [
+      {"feature": "NumOfProducts_Two", "mean_absolute_value": 0.951401},
+      {"feature": "Age", "mean_absolute_value": 0.830494},
+      {"feature": "IsActiveMember", "mean_absolute_value": 0.415906},
+      {"feature": "NumOfProducts_One", "mean_absolute_value": 0.322238},
+      {"feature": "Tenure", "mean_absolute_value": 0.285945},
+      {"feature": "Geography_Germany", "mean_absolute_value": 0.221309},
+      {"feature": "Gender_Male", "mean_absolute_value": 0.107437},
+      {"feature": "Gender_Female", "mean_absolute_value": 0.086776},
+      {"feature": "CreditScore", "mean_absolute_value": 0.065473},
+      {"feature": "Geography_France", "mean_absolute_value": 0.033237},
+      {"feature": "NumOfProducts_Three", "mean_absolute_value": 0.019023},
+      {"feature": "Geography_Spain", "mean_absolute_value": 0.009573},
+      {"feature": "NumOfProducts_Four", "mean_absolute_value": 0.0}
+    ]
+  },
+  "feature_importance": [
+    {"feature": "Age", "importance": 0.458332},
+    {"feature": "NumOfProducts_Two", "importance": 0.180704},
+    {"feature": "Tenure", "importance": 0.156071},
+    {"feature": "IsActiveMember", "importance": 0.093637},
+    {"feature": "NumOfProducts_One", "importance": 0.048733},
+    {"feature": "Geography_Germany", "importance": 0.031144},
+    {"feature": "CreditScore", "importance": 0.009419},
+    {"feature": "Gender_Male", "importance": 0.00757},
+    {"feature": "Gender_Female", "importance": 0.006367},
+    {"feature": "Geography_France", "importance": 0.003456},
+    {"feature": "NumOfProducts_Three", "importance": 0.003032},
+    {"feature": "Geography_Spain", "importance": 0.001536},
+    {"feature": "NumOfProducts_Four", "importance": 0.0}
+  ],
+  "model_comparison": [
+    {"model": "Logistic Regression", "accuracy": 0.7695, "precision": 0.4661, "recall": 0.7614, "f1": 0.5782, "roc_auc": 0.8502},
+    {"model": "Decision Tree", "accuracy": 0.7765, "precision": 0.4667, "recall": 0.5398, "f1": 0.5006, "roc_auc": 0.6891},
+    {"model": "Random Forest", "accuracy": 0.8295, "precision": 0.5907, "recall": 0.5807, "f1": 0.5857, "roc_auc": 0.8336},
+    {"model": "Extra Trees", "accuracy": 0.8195, "precision": 0.5678, "recall": 0.5446, "f1": 0.556, "roc_auc": 0.8201},
+    {"model": "AdaBoost", "accuracy": 0.82, "precision": 0.5522, "recall": 0.7012, "f1": 0.6178, "roc_auc": 0.8581},
+    {"model": "Gradient Boosting", "accuracy": 0.838, "precision": 0.5962, "recall": 0.6795, "f1": 0.6351, "roc_auc": 0.8641},
+    {"model": "K-nearest Neighbors", "accuracy": 0.7575, "precision": 0.4444, "recall": 0.6747, "f1": 0.5359, "roc_auc": 0.7913}
+  ]
+}
