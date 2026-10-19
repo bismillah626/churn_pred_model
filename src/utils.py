@@ -30,10 +30,10 @@ def get_classification_report(models,X_train,y_train,X_test,y_test):
         for model_name,model in models.items():
             model.fit(X_train,y_train)
             y_pred=model.predict(X_test)
-            accuracy=accuracy_score(y_pred,y_test)
-            precision=precision_score(y_pred,y_test)
-            recall=recall_score(y_pred,y_test)
-            f_score=f1_score(y_pred,y_test)
+            accuracy=accuracy_score(y_test,y_pred)
+            precision=precision_score(y_test,y_pred,zero_division=0)
+            recall=recall_score(y_test,y_pred,zero_division=0)
+            f_score=f1_score(y_test,y_pred,zero_division=0)
             classification_report[model_name]={
                 "accuracy":accuracy,
                 "precision":precision,
@@ -46,5 +46,3 @@ def get_classification_report(models,X_train,y_train,X_test,y_test):
     except Exception as e:
         raise CustomException(e,sys)
     
-            
-        
