@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Customer churn intelligence dashboard">
+    <title>{% block title %}Churn Intelligence{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <span class="brand-mark">C</span>
+                <span><strong>Churn</strong><small>Intelligence</small></span>
+            </div>
+            <div class="sidebar-label">Workspace</div>
+            <nav class="sidebar-nav" aria-label="Primary navigation">
+                <a href="{{ url_for('index') }}#overview" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}"><span>◈</span>Overview</a>
+                <a href="{{ url_for('index') }}#data-explorer" class="nav-link"><span>▦</span>Data Explorer</a>
+                <a href="{{ url_for('index') }}#model-performance" class="nav-link"><span>⌁</span>Model Performance</a>
+                <a href="{{ url_for('index') }}#predictions" class="nav-link {% if active_page == 'prediction' %}active{% endif %}"><span>◎</span>Predictions</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-dot"></div>
+                <div><strong>Analytics ready</strong><small>Local model workspace</small></div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <button class="icon-button mobile-menu" id="menu-toggle" aria-label="Open navigation">☰</button>
+                <div class="breadcrumbs"><span>Workspace</span><b>/</b><strong>{% block breadcrumb %}Overview{% endblock %}</strong></div>
+                <div class="topbar-actions">
+                    <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
+                    <a class="avatar" href="{{ url_for('index') }}#predictions" aria-label="Open prediction form">DS</a>
+                </div>
+            </header>
+            <div class="page-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
