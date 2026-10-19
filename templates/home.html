@@ -1,97 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div class="login">
-        <h1>Churn Prediction Using ML</h1>
+{% extends "base.html" %}
+{% set active_page = "prediction" %}
+{% block title %}Churn Intelligence · Prediction{% endblock %}
+{% block breadcrumb %}Predictions{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-copy">
+        <div class="eyebrow">Live inference</div>
+        <h1>Score a customer.</h1>
+        <p>Enter a customer profile to estimate churn risk and, when available, see the model's feature-level explanation.</p>
+    </div>
+    <div class="hero-actions"><a class="button secondary" href="{{ url_for('index') }}">← Back to dashboard</a></div>
+</section>
 
-        <form action="{{ url_for('predict_data')}}" method="post">
-            <h1>
-                <legend>Bank Churn Prediction</legend>
-            </h1>
-            <div class="mb-3">
-                <label class="form-label">Age</label>
-                <input class="form-control" type="number" name="age" placeholder="Enter your Age" min='18' max='100' />
+<div class="prediction-layout">
+    <article class="panel">
+        <h3>Customer profile</h3>
+        <form id="prediction-form" action="{{ url_for('predict_data') }}" method="post">
+            <div class="form-grid">
+                <div class="form-field"><label for="age">Age</label><input id="age" type="number" name="age" min="18" max="100" placeholder="42" required></div>
+                <div class="form-field"><label for="gender">Gender</label><select id="gender" name="gender" required><option value="" disabled selected>Select gender</option><option>Female</option><option>Male</option></select></div>
+                <div class="form-field"><label for="tenure">Tenure</label><input id="tenure" type="number" name="tenure" min="0" max="10" placeholder="5" required></div>
+                <div class="form-field"><label for="CreditScore">Credit score</label><input id="CreditScore" type="number" name="CreditScore" min="300" max="850" placeholder="650" required></div>
+                <div class="form-field"><label for="IsActiveMember">Active member</label><select id="IsActiveMember" name="IsActiveMember" required><option value="" disabled selected>Select status</option><option value="1">Yes</option><option value="0">No</option></select></div>
+                <div class="form-field"><label for="Geography">Geography</label><select id="Geography" name="Geography" required><option value="" disabled selected>Select geography</option><option>France</option><option>Spain</option><option>Germany</option></select></div>
+                <div class="form-field full"><label for="NumOfProducts">Number of products</label><select id="NumOfProducts" name="NumOfProducts" required><option value="" disabled selected>Select products</option><option>One</option><option>Two</option><option>Three</option><option>Four</option></select></div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Gender</label>
-                <select class="form-control" name="gender" placeholder="Enter you Gender" required>
-                    <option class="placeholder" selected disabled value="">Select your Gender</option>
-                    <option value="Male">
-                        Male
-                    </option>
-                    <option value="Female">
-                        Female
-                    </option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Tenure</label>
-                <input class="form-control" type="number" name="tenure" placeholder="Enter Tenure" min='1' max='10' />
-            </div>
-            <div class="mb-3">
-                <label class="form-label">CreditScore</label>
-                <input class="form-control" type="number" name="CreditScore" placeholder="Enter CreditScore" min='300' max='850' />
-            </div>
-            <div class="mb-3">
-                <label class="form-label">IsActiveMember</label>
-                <input class="form-control" type="number" name="IsActiveMember" placeholder="IsActiveMember" min='0' max='1' />
-            </div>
-          
-                
-            <div class="mb-3">
-                <label class="form-label">Geography</label>
-                <select class="form-control" name="Geography" placeholder="Enter Geography"
-                    required>
-                    <option class="placeholder" selected disabled value="">Select Geography</option>
-                    <option value="France">
-                        France
-                    </option>
-                    <option value="Spain">
-                        Spain
-                    </option>
-                    <option value="Germany">
-                        Germany
-                    </option>
-                </select>
-            </div>
-        <div class="mb-3">
-            <label class="form-label">NumOfProducts</label>
-            <select class="form-control" name="NumOfProducts" placeholder="Enter NumOfProducts" required>
-                <option class="placeholder" selected disabled value="">Select NumOfProducts</option>
-                <option value="One">
-                    One
-                </option>
-                <option value="Two">
-                    Two
-                </option>
-                <option value="Three">
-                    Three
-                </option>
-                <option value="Four">
-                    Four
-                </option>
-            </select>
-        </div>
-
-            <div class="mb-3">
-                <input class="btn btn-primary" type="submit" value="Predict Churn" required />
-            </div>
+            <div class="form-actions"><button class="button" type="submit">Run prediction <span aria-hidden="true">→</span></button><span id="prediction-message" class="form-message" role="status">{% if error %}{{ error }}{% elif result is defined %}Prediction complete{% endif %}</span></div>
         </form>
-        <h2>
-            The prediction is {{results}}
-        </h2>
-        {% if shap_plot %}
-        <div style="margin-top: 30px;">
-            <h3>Prediction Explanation (SHAP Value Impact):</h3>
-            <p>This chart shows which features drove the model's decision for this specific customer.</p>
-            <img src="data:image/png;base64,{{ shap_plot }}" alt="SHAP Explanation Plot" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
-        </div>
+        {% if result is defined %}
+        <div class="prediction-result visible {{ 'churn' if result|int == 1 else 'stay' }}"><strong>{{ 'Customer likely to churn' if result|int == 1 else 'Customer likely to stay' }}</strong><p>{{ 'Prioritize this customer for retention outreach.' if result|int == 1 else 'The model sees a lower immediate churn risk.' }}</p></div>
         {% endif %}
-
-        <body>
-</html>
+    </article>
+    <article class="panel">
+        <h3>Why this prediction?</h3>
+        <p style="margin-top:7px;font-size:.82rem">The optional SHAP explanation ranks which transformed features contributed most to this individual score.</p>
+        <div id="prediction-explanation" class="explanation">
+            {% if shap_plot %}<img src="data:image/png;base64,{{ shap_plot }}" alt="SHAP explanation for this prediction">{% else %}<p>Submit a profile to generate an explanation.</p>{% endif %}
+        </div>
+    </article>
+</div>
+{% endblock %}
