@@ -1,29 +1,37 @@
+import base64
+import io
 import sys
+from pathlib import Path
+
+import pandas as pd
+
 from src.exception_handler import CustomException
 from src.logger import logging
 from src.utils import load_object
-import numpy as np
-import pandas as pd
-import shap
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import io
-import base64
 
+
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
 
 
 class PredictionPipeline:
-    def __init__(self,Age,Gender:str,Tenure,CreditScore,
-                 IsActiveMember,Geography,NumOfProducts) :
-        # all the custom values
-        self.Age=Age
-        self.Gender=Gender
-        self.Tenure=Tenure
-        self.CreditScore=CreditScore
-        self.IsActiveMember=IsActiveMember
-        self.Geography=Geography
-        self.NumOfProducts=NumOfProducts
+    def __init__(
+        self,
+        Age,
+        Gender: str,
+        Tenure,
+        CreditScore,
+        IsActiveMember,
+        Geography,
+        NumOfProducts,
+    ):
+        self.Age = int(Age)
+        self.Gender = Gender
+        self.Tenure = int(Tenure)
+        self.CreditScore = int(CreditScore)
+        self.IsActiveMember = int(IsActiveMember)
+        self.Geography = Geography
+        self.NumOfProducts = NumOfProducts
 
     def _get_dataframe(self):
         """
@@ -50,15 +58,15 @@ class PredictionPipeline:
         """
         try:
             logging.info("Loading the model.")
-            model=load_object("artifacts\model.pkl")
+            model = load_object(str(ROOT_DIR / "artifacts" / "model.pkl"))
 
             logging.info("Loading the Preprocessor.")
-            preprocessor=load_object("artifacts\preprocessor.pkl")
+            preprocessor = load_object(str(ROOT_DIR / "artifacts" / "preprocessor.pkl"))
 
             data=self._get_dataframe()
-            prediction_data=preprocessor.transform(data)
+            prediction_data = preprocessor.transform(data)
             logging.info("Processed the data.")
-            result=model.predict(prediction_data)
+            result = model.predict(prediction_data)
             return result
 
         except Exception as e:
@@ -68,44 +76,59 @@ class PredictionPipeline:
         logging.info("Predict and explain method invoked.")
         try:
             logging.info("Loading the model and preprocessor for explanation.")
-            model=load_object("artifacts\model.pkl")
-            preprocessor=load_object("artifacts\preprocessor.pkl")
+            model = load_object(str(ROOT_DIR / "artifacts" / "model.pkl"))
+            preprocessor = load_object(str(ROOT_DIR / "artifacts" / "preprocessor.pkl"))
 
             data=self._get_dataframe()
-            prediction_data=preprocessor.transform(data)
+            prediction_data = preprocessor.transform(data)
             logging.info("Processed the data for explanation.")
             
-            result=model.predict(prediction_data)
-            
-            # Explain with SHAP
-            logging.info("Generating SHAP explanation.")
-            explainer = shap.TreeExplainer(model)
-            shap_values = explainer.shap_values(prediction_data)
-            
-            # Handle both classification array types
-            if isinstance(shap_values, list):
-                shap_val = shap_values[1]
-            else:
-                shap_val = shap_values
+            result = model.predict(prediction_data)
 
-            # Try to get feature names, fallback to generic if not possible
+            # Explain with SHAP when it is available. Prediction should still
+            # work in a lean runtime where the optional plotting stack is absent.
             try:
-                feature_names = preprocessor.get_feature_names_out()
-            except AttributeError:
-                feature_names = [f"Feature {i}" for i in range(prediction_data.shape[1])]
-                
-            plt.figure(figsize=(8, 4))
-            shap.summary_plot(shap_val, prediction_data, feature_names=feature_names, plot_type="bar", show=False)
-            
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png', bbox_inches='tight')
-            buf.seek(0)
-            plt.close()
-            
-            img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-            
+                import matplotlib
+
+                matplotlib.use("Agg")
+                import matplotlib.pyplot as plt
+                import shap
+
+                logging.info("Generating SHAP explanation.")
+                explainer = shap.TreeExplainer(model)
+                shap_values = explainer.shap_values(prediction_data)
+                if isinstance(shap_values, list):
+                    shap_val = shap_values[min(1, len(shap_values) - 1)]
+                else:
+                    shap_val = shap_values
+                    if getattr(shap_val, "ndim", 0) == 3:
+                        shap_val = shap_val[:, :, min(1, shap_val.shape[2] - 1)]
+
+                try:
+                    feature_names = preprocessor.get_feature_names_out()
+                except AttributeError:
+                    feature_names = [
+                        f"Feature {i}" for i in range(prediction_data.shape[1])
+                    ]
+
+                plt.figure(figsize=(8, 4))
+                shap.summary_plot(
+                    shap_val,
+                    prediction_data,
+                    feature_names=feature_names,
+                    plot_type="bar",
+                    show=False,
+                )
+                buf = io.BytesIO()
+                plt.savefig(buf, format="png", bbox_inches="tight")
+                buf.seek(0)
+                plt.close()
+                img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+            except Exception as explanation_error:
+                logging.warning("SHAP explanation unavailable: %s", explanation_error)
+                img_base64 = None
+
             return result, img_base64
 
         except Exception as e:
             raise CustomException(e,sys)
-
